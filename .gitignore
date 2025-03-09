@@ -1,0 +1,49 @@
+# Python 가상 환경
+venv/
+env/
+ENV/
+
+# Python 캐시 파일
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 환경 변수 파일
+.env
+
+# 로그 파일
+*.log
+
+# 개인 설정 파일
+telegram_config.json
+kakao_token.json
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# VS Code
+.vscode/
+
+# PyCharm
+.idea/
+
+# 시스템 파일
+.DS_Store
+Thumbs.db 
