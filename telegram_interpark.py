@@ -219,13 +219,19 @@ class TelegramBot:
         """봇 설정"""
         # 환경변수에서 토큰 가져오기 또는 사용자 입력 받기
         bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-        if not bot_token:
+        if not bot_token and not self.config.get("bot_token"):
             bot_token = input("텔레그램 봇 토큰을 입력하세요: ")
+            self.config["bot_token"] = bot_token
+        elif not bot_token:
+            bot_token = self.config.get("bot_token")
+        else:
+            self.config["bot_token"] = bot_token
             
-        self.config["bot_token"] = bot_token
-        
         # 관리자 채팅 ID 설정
-        if not self.config.get("admin_chat_id"):
+        admin_chat_id = os.getenv('ADMIN_CHAT_ID')
+        if admin_chat_id:
+            self.config["admin_chat_id"] = admin_chat_id
+        elif not self.config.get("admin_chat_id"):
             print("\n관리자 채팅 ID를 설정하려면:")
             print("1. 텔레그램에서 봇을 찾아 시작(/start)합니다.")
             print("2. 봇에게 아무 메시지나 보냅니다.")

@@ -33,6 +33,7 @@ jobs:
     - name: 환경 변수 설정
       run: |
         echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > .env
+        echo "ADMIN_CHAT_ID=${{ secrets.ADMIN_CHAT_ID }}" >> .env
       
     - name: 스크립트 실행
       run: |
