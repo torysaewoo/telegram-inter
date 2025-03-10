@@ -47,3 +47,5 @@ kakao_token.json
 # 시스템 파일
 .DS_Store
 Thumbs.db 
+
+*.md
