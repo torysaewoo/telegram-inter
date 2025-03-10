@@ -42,4 +42,6 @@ jobs:
         export DISPLAY=:99
         chromedriver --url-base=/wd/hub &
         # 파이썬 스크립트 실행
+        export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+        export ADMIN_CHAT_ID=${{ secrets.ADMIN_CHAT_ID }}
         python telegram_interpark.py 

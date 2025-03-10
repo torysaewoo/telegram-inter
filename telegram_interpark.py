@@ -217,14 +217,17 @@ class TelegramBot:
     
     def setup_bot(self):
         """봇 설정"""
-        # 환경변수에서 토큰 가져오기 또는 사용자 입력 받기
+        # 환경변수에서 토큰 가져오기
         bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-        if not bot_token and not self.config.get("bot_token"):
-            bot_token = input("텔레그램 봇 토큰을 입력하세요: ")
-            self.config["bot_token"] = bot_token
-        elif not bot_token:
+        
+        # 환경변수에 토큰이 없으면 설정 파일에서 가져오기
+        if not bot_token:
             bot_token = self.config.get("bot_token")
+            if not bot_token:
+                print("오류: TELEGRAM_BOT_TOKEN 환경변수 또는 설정 파일에 봇 토큰이 없습니다.")
+                return False
         else:
+            # 환경변수에서 가져온 토큰을 설정에 저장
             self.config["bot_token"] = bot_token
             
         # 관리자 채팅 ID 설정
@@ -232,28 +235,13 @@ class TelegramBot:
         if admin_chat_id:
             self.config["admin_chat_id"] = admin_chat_id
         elif not self.config.get("admin_chat_id"):
-            print("\n관리자 채팅 ID를 설정하려면:")
-            print("1. 텔레그램에서 봇을 찾아 시작(/start)합니다.")
-            print("2. 봇에게 아무 메시지나 보냅니다.")
-            print("3. 다음 URL에 접속하여 chat_id를 확인합니다:")
-            print(f"   https://api.telegram.org/bot{bot_token}/getUpdates")
-            print("4. 응답에서 'chat' 객체 내의 'id' 값을 찾아 입력하세요.\n")
-            
-            admin_chat_id = input("관리자 채팅 ID를 입력하세요: ")
-            self.config["admin_chat_id"] = admin_chat_id
-            
-            # 관리자를 구독자 목록에 추가
-            if admin_chat_id not in self.config.get("subscribers", []):
-                if "subscribers" not in self.config:
-                    self.config["subscribers"] = []
-                self.config["subscribers"].append(admin_chat_id)
-            
+            print("경고: ADMIN_CHAT_ID 환경변수 또는 설정 파일에 관리자 채팅 ID가 없습니다.")
+            self.config["admin_chat_id"] = ""
+        
+        # 설정 저장
         self.save_config()
         
-        # 봇 명령어 설정
-        self.set_bot_commands()
-        
-        return self.config
+        return True
     
     def set_bot_commands(self):
         """봇 명령어 설정"""
@@ -378,9 +366,14 @@ def main():
     # 텔레그램 봇 초기화
     telegram = TelegramBot()
     
-    # 봇 설정 확인
+    # 봇 설정이 없으면 설정
     if not telegram.config.get("bot_token") or not telegram.config.get("admin_chat_id"):
-        telegram.setup_bot()
+        if not telegram.setup_bot():
+            print("봇 설정에 실패했습니다. 프로그램을 종료합니다.")
+            return
+    
+    # 봇 명령어 설정
+    telegram.set_bot_commands()
     
     # 봇 업데이트 확인 및 처리
     telegram.get_updates()
