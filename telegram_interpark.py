@@ -229,6 +229,14 @@ class TelegramBot:
             if admin_chat_id not in self.config["subscribers"]:
                 self.config["subscribers"].append(admin_chat_id)
                 print(f"관리자 ID({admin_chat_id})를 구독자 목록에 추가했습니다.")
+        
+        # 하드코딩된 구독자 목록 추가 (GitHub Actions에서 실행될 때 사용)
+        # 실제 구독자 ID를 여기에 추가하세요
+        hardcoded_subscribers = ["6282968299", "7622974634"]
+        for sub_id in hardcoded_subscribers:
+            if sub_id not in self.config["subscribers"]:
+                self.config["subscribers"].append(sub_id)
+                print(f"하드코딩된 구독자 ID({sub_id})를 구독자 목록에 추가했습니다.")
     
     def load_from_file(self):
         """파일에서 설정 로드"""
@@ -383,9 +391,28 @@ class TelegramBot:
         """모든 구독자에게 메시지 보내기"""
         results = []
         
+        print("\n=== 메시지 전송 준비 ===")
+        print(f"config 객체 내용: {self.config}")
+        print(f"subscribers 키 존재 여부: {'subscribers' in self.config}")
+        
         # 구독자 목록 확인
-        if not self.config.get("subscribers"):
-            print("구독자 목록이 비어 있습니다.")
+        subscribers = self.config.get('subscribers', [])
+        print(f"구독자 수: {len(subscribers)}")
+        print(f"구독자 목록: {subscribers}")
+        
+        # 구독자가 없으면 하드코딩된 구독자 추가
+        if not subscribers:
+            print("구독자 목록이 비어 있어 하드코딩된 구독자를 추가합니다.")
+            hardcoded_subscribers = ["6282968299", "7622974634"]
+            for sub_id in hardcoded_subscribers:
+                self.config["subscribers"].append(sub_id)
+                print(f"하드코딩된 구독자 ID({sub_id})를 구독자 목록에 추가했습니다.")
+            print(f"추가 후 구독자 수: {len(self.config['subscribers'])}")
+            subscribers = self.config.get('subscribers', [])
+        
+        # 구독자가 여전히 없으면 관리자에게만 메시지 전송
+        if not subscribers:
+            print("구독자 목록이 여전히 비어 있습니다.")
             
             # 관리자 채팅 ID가 있으면 관리자에게만 메시지 전송
             admin_chat_id = self.config.get("admin_chat_id")
@@ -399,7 +426,7 @@ class TelegramBot:
                 return {"ok": False, "description": "No subscribers and no admin chat ID"}
         
         # 구독자 목록 출력
-        print(f"\n=== 메시지 전송 시작 ===")
+        print(f"=== 메시지 전송 시작 ===")
         print(f"총 구독자 수: {len(self.config['subscribers'])}")
         print(f"구독자 목록: {self.config['subscribers']}")
         
@@ -443,7 +470,18 @@ def main():
         print(f"봇 업데이트 확인 실패 (무시됨): {e}")
     
     # 구독자 목록 확인
-    print(f"구독자 수: {len(telegram.config.get('subscribers', []))}")
+    subscribers = telegram.config.get('subscribers', [])
+    print(f"구독자 수: {len(subscribers)}")
+    print(f"구독자 목록: {subscribers}")
+    
+    # 구독자가 없으면 하드코딩된 구독자 추가
+    if not subscribers:
+        print("구독자 목록이 비어 있어 하드코딩된 구독자를 추가합니다.")
+        hardcoded_subscribers = ["6282968299", "7622974634"]
+        for sub_id in hardcoded_subscribers:
+            telegram.config["subscribers"].append(sub_id)
+            print(f"하드코딩된 구독자 ID({sub_id})를 구독자 목록에 추가했습니다.")
+        print(f"추가 후 구독자 수: {len(telegram.config['subscribers'])}")
     
     # 티켓 정보 가져오기 - 여러 페이지에서 가져오기
     iframe_url = 'https://ticket.interpark.com/webzine/paper/TPNoticeList_iFrame.asp?bbsno=34&pageno=1&KindOfGoods=TICKET&Genre=&sort=opendate&stext='
