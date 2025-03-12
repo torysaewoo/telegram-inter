@@ -9,6 +9,9 @@ on:
 jobs:
   run-script:
     runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
     
     steps:
     - name: 저장소 체크아웃
@@ -30,11 +33,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         
-    - name: 환경 변수 설정
-      run: |
-        echo "TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}" > .env
-        echo "ADMIN_CHAT_ID=${{ secrets.ADMIN_CHAT_ID }}" >> .env
-      
     - name: 스크립트 실행
       run: |
         # Chrome 드라이버 시작
@@ -42,6 +40,4 @@ jobs:
         export DISPLAY=:99
         chromedriver --url-base=/wd/hub &
         # 파이썬 스크립트 실행
-        export TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
-        export ADMIN_CHAT_ID=${{ secrets.ADMIN_CHAT_ID }}
         python telegram_interpark.py 

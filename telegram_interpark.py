@@ -219,10 +219,12 @@ class TelegramBot:
         """봇 설정"""
         # 환경변수에서 토큰 가져오기
         bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        print(f"환경 변수 TELEGRAM_BOT_TOKEN: {bot_token}")
         
         # 환경변수에 토큰이 없으면 설정 파일에서 가져오기
         if not bot_token:
             bot_token = self.config.get("bot_token")
+            print(f"설정 파일에서 가져온 bot_token: {bot_token}")
             if not bot_token:
                 print("오류: TELEGRAM_BOT_TOKEN 환경변수 또는 설정 파일에 봇 토큰이 없습니다.")
                 return False
@@ -232,6 +234,7 @@ class TelegramBot:
             
         # 관리자 채팅 ID 설정
         admin_chat_id = os.getenv('ADMIN_CHAT_ID')
+        print(f"환경 변수 ADMIN_CHAT_ID: {admin_chat_id}")
         if admin_chat_id:
             self.config["admin_chat_id"] = admin_chat_id
         elif not self.config.get("admin_chat_id"):
@@ -363,6 +366,12 @@ class TelegramBot:
 
 # 4. 실행 함수
 def main():
+    # 환경 변수 확인
+    print("=== 환경 변수 확인 ===")
+    print(f"TELEGRAM_BOT_TOKEN 환경 변수 존재: {'있음' if os.getenv('TELEGRAM_BOT_TOKEN') else '없음'}")
+    print(f"ADMIN_CHAT_ID 환경 변수 존재: {'있음' if os.getenv('ADMIN_CHAT_ID') else '없음'}")
+    print("=====================")
+    
     # 텔레그램 봇 초기화
     telegram = TelegramBot()
     
