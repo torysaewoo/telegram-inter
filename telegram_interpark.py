@@ -201,47 +201,84 @@ class TelegramBot:
     def __init__(self, config_path='telegram_config.json'):
         """텔레그램 봇 초기화"""
         self.config_path = config_path
-        self.config = self.load_config()
+        # 기본 설정 초기화
+        self.config = {
+            "bot_token": "",
+            "subscribers": []
+        }
+        # 환경 변수에서 설정 로드
+        self.load_from_env()
+        # 파일에서 설정 로드 시도 (실패해도 계속 진행)
+        try:
+            self.load_from_file()
+        except Exception as e:
+            print(f"설정 파일 로드 실패 (무시됨): {e}")
+    
+    def load_from_env(self):
+        """환경 변수에서 설정 로드"""
+        bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        admin_chat_id = os.getenv('ADMIN_CHAT_ID')
         
-    def load_config(self):
-        """설정 로드"""
+        if bot_token:
+            self.config["bot_token"] = bot_token
+            print(f"환경 변수에서 봇 토큰을 로드했습니다.")
+        
+        if admin_chat_id:
+            self.config["admin_chat_id"] = admin_chat_id
+            # 관리자 ID를 구독자 목록에 추가
+            if admin_chat_id not in self.config["subscribers"]:
+                self.config["subscribers"].append(admin_chat_id)
+                print(f"관리자 ID({admin_chat_id})를 구독자 목록에 추가했습니다.")
+    
+    def load_from_file(self):
+        """파일에서 설정 로드"""
         if os.path.exists(self.config_path):
             with open(self.config_path, 'r') as f:
-                return json.load(f)
-        return {"bot_token": "", "subscribers": []}
+                file_config = json.load(f)
+                # 파일에서 로드한 설정을 현재 설정과 병합
+                if "bot_token" in file_config and not self.config["bot_token"]:
+                    self.config["bot_token"] = file_config["bot_token"]
+                
+                if "subscribers" in file_config:
+                    for sub in file_config["subscribers"]:
+                        if sub not in self.config["subscribers"]:
+                            self.config["subscribers"].append(sub)
+                
+                if "admin_chat_id" in file_config and not self.config.get("admin_chat_id"):
+                    self.config["admin_chat_id"] = file_config["admin_chat_id"]
+                    
+                print(f"설정 파일에서 설정을 로드했습니다.")
     
     def save_config(self):
-        """설정 저장"""
-        with open(self.config_path, 'w') as f:
-            json.dump(self.config, f)
+        """설정 저장 (선택적)"""
+        try:
+            with open(self.config_path, 'w') as f:
+                json.dump(self.config, f)
+            print(f"설정을 파일에 저장했습니다: {self.config_path}")
+        except Exception as e:
+            print(f"설정 파일 저장 실패 (무시됨): {e}")
     
     def setup_bot(self):
         """봇 설정"""
-        # 환경변수에서 토큰 가져오기
-        bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-        print(f"환경 변수 TELEGRAM_BOT_TOKEN: {bot_token}")
+        # 봇 토큰 확인
+        if not self.config["bot_token"]:
+            print("오류: 봇 토큰이 설정되지 않았습니다.")
+            return False
         
-        # 환경변수에 토큰이 없으면 설정 파일에서 가져오기
-        if not bot_token:
-            bot_token = self.config.get("bot_token")
-            print(f"설정 파일에서 가져온 bot_token: {bot_token}")
-            if not bot_token:
-                print("오류: TELEGRAM_BOT_TOKEN 환경변수 또는 설정 파일에 봇 토큰이 없습니다.")
-                return False
-        else:
-            # 환경변수에서 가져온 토큰을 설정에 저장
-            self.config["bot_token"] = bot_token
-            
-        # 관리자 채팅 ID 설정
-        admin_chat_id = os.getenv('ADMIN_CHAT_ID')
-        print(f"환경 변수 ADMIN_CHAT_ID: {admin_chat_id}")
-        if admin_chat_id:
-            self.config["admin_chat_id"] = admin_chat_id
-        elif not self.config.get("admin_chat_id"):
-            print("경고: ADMIN_CHAT_ID 환경변수 또는 설정 파일에 관리자 채팅 ID가 없습니다.")
-            self.config["admin_chat_id"] = ""
+        # 관리자 채팅 ID가 없으면 경고
+        if not self.config.get("admin_chat_id"):
+            print("경고: 관리자 채팅 ID가 설정되지 않았습니다.")
         
-        # 설정 저장
+        # 구독자 목록 확인 및 관리자 추가
+        admin_chat_id = self.config.get("admin_chat_id")
+        if admin_chat_id and admin_chat_id not in self.config["subscribers"]:
+            self.config["subscribers"].append(admin_chat_id)
+            print(f"관리자 ID({admin_chat_id})를 구독자 목록에 추가했습니다.")
+        
+        # 구독자 목록 출력
+        print(f"현재 구독자 목록: {self.config['subscribers']}")
+        
+        # 설정 저장 시도 (선택적)
         self.save_config()
         
         return True
@@ -346,14 +383,27 @@ class TelegramBot:
         """모든 구독자에게 메시지 보내기"""
         results = []
         
+        # 구독자 목록 확인
         if not self.config.get("subscribers"):
-            print("구독자가 없습니다.")
-            return {"ok": False, "description": "No subscribers"}
+            print("구독자 목록이 비어 있습니다.")
+            
+            # 관리자 채팅 ID가 있으면 관리자에게만 메시지 전송
+            admin_chat_id = self.config.get("admin_chat_id")
+            if admin_chat_id:
+                print(f"관리자({admin_chat_id})에게 메시지를 전송합니다.")
+                result = self.send_message_to_chat(message, admin_chat_id)
+                results.append(result)
+                return {"ok": True, "results": results}
+            else:
+                print("관리자 채팅 ID도 설정되지 않았습니다. 메시지를 전송할 수 없습니다.")
+                return {"ok": False, "description": "No subscribers and no admin chat ID"}
         
+        # 구독자 목록 출력
         print(f"\n=== 메시지 전송 시작 ===")
         print(f"총 구독자 수: {len(self.config['subscribers'])}")
         print(f"구독자 목록: {self.config['subscribers']}")
         
+        # 모든 구독자에게 메시지 전송
         for chat_id in self.config["subscribers"]:
             print(f"메시지 전송 중... (chat_id: {chat_id})")
             result = self.send_message_to_chat(message, chat_id)
@@ -368,24 +418,29 @@ class TelegramBot:
 def main():
     # 환경 변수 확인
     print("=== 환경 변수 확인 ===")
-    print(f"TELEGRAM_BOT_TOKEN 환경 변수 존재: {'있음' if os.getenv('TELEGRAM_BOT_TOKEN') else '없음'}")
-    print(f"ADMIN_CHAT_ID 환경 변수 존재: {'있음' if os.getenv('ADMIN_CHAT_ID') else '없음'}")
+    print(f"TELEGRAM_BOT_TOKEN 환경 변수: {'설정됨' if os.getenv('TELEGRAM_BOT_TOKEN') else '설정되지 않음'}")
+    print(f"ADMIN_CHAT_ID 환경 변수: {'설정됨' if os.getenv('ADMIN_CHAT_ID') else '설정되지 않음'}")
     print("=====================")
     
     # 텔레그램 봇 초기화
     telegram = TelegramBot()
     
-    # 봇 설정이 없으면 설정
-    if not telegram.config.get("bot_token") or not telegram.config.get("admin_chat_id"):
-        if not telegram.setup_bot():
-            print("봇 설정에 실패했습니다. 프로그램을 종료합니다.")
-            return
+    # 봇 설정 확인 및 업데이트
+    if not telegram.setup_bot():
+        print("봇 설정에 실패했습니다. 프로그램을 종료합니다.")
+        return
     
     # 봇 명령어 설정
-    telegram.set_bot_commands()
+    try:
+        telegram.set_bot_commands()
+    except Exception as e:
+        print(f"봇 명령어 설정 실패 (무시됨): {e}")
     
     # 봇 업데이트 확인 및 처리
-    telegram.get_updates()
+    try:
+        telegram.get_updates()
+    except Exception as e:
+        print(f"봇 업데이트 확인 실패 (무시됨): {e}")
     
     # 구독자 목록 확인
     print(f"구독자 수: {len(telegram.config.get('subscribers', []))}")
