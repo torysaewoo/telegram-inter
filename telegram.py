@@ -65,7 +65,7 @@ if __name__ == "__main__":
         message = create_ticket_message(ticket_info)
         
         print("텔레그램으로 메시지 전송 중...")
-        result = send_message(ADMIN_CHAT_ID, message)
+        result = send_message('-4798861513', message)
         
         if result.get('ok'):
             print("메시지 전송 성공!")
