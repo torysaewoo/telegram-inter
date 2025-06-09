@@ -4,6 +4,7 @@ import json
 import time
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+import pytz
 
 
 # .env 파일 로드
@@ -56,8 +57,8 @@ def create_ticket_message():
         response = requests.get(url, params=params, headers=headers)
         data = response.json()
         
-        today_date = datetime.now().strftime('%Y년 %m월 %d일')
-        tomorrow = (datetime.now() + timedelta(days=2)).date()
+        today_date = datetime.now(pytz.timezone('Asia/Seoul')).strftime('%Y년 %m월 %d일')
+        tomorrow = (datetime.now(pytz.timezone('Asia/Seoul')) + timedelta(days=1)).date()
         
         print(f"=== {today_date} 티켓 오픈 정보 ===")
         message = f"<b>🎫 {today_date} 티켓 오픈 정보 🎫</b>\n\n"
@@ -77,7 +78,7 @@ def create_ticket_message():
             ticket_date = datetime(year, month, day).date()
             
             # 날짜별 구분 및 서식 추가
-            today = datetime.now().date()
+            today = datetime.now(pytz.timezone('Asia/Seoul')).date()
             # 내일 날짜인지 확인 (오늘과 내일 티켓만 표시)
             if ticket_date > today + timedelta(days=1):
                 break
