@@ -49,3 +49,16 @@ kakao_token.json
 Thumbs.db 
 
 *.md
+
+# Credentials
+google.json
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
