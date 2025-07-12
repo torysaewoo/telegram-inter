@@ -67,8 +67,12 @@ class InterparkTicketCrawler:
         """HOT 티켓만 필터링"""
         hot_tickets = []
         for ticket in raw_data:
-            if not ticket.get('isHot', False):
-                continue
+            if ticket.get('goodsGenreStr', '') == '뮤지컬':
+                if not ticket.get('isHot', False):
+                    continue
+            else:
+                if not ticket.get('viewCount', 0) > 1000:
+                    continue
                 
             ticket_info = {
                 '오픈시간': ticket.get('openDateStr', ''),

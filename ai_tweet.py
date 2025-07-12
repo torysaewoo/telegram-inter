@@ -108,7 +108,7 @@ VIP 잡아도 수고비 5만원 선입금, 실패시 수고비 전액환불
 
 #티켓팅 #대리티켓팅 #콘서트 #선착순할인"""
 
-        return tweet_text[:280]  # 280자 제한
+        return tweet_text
 
 def simple_test():
     """간단한 테스트 함수"""
@@ -132,10 +132,10 @@ def simple_test():
         tweeter = SimpleImageTweet()
         
         # 사용자 입력 받기
-        print("📝 트윗 정보 입력:")
-        title = input("공연 제목: ").strip() or "테스트 콘서트"
-        open_time = input("오픈시간: ").strip() or "2025.02.15 (토) 20:00"
-        image_path = input("이미지 파일 경로 (없으면 Enter): ").strip()
+        
+        title = "테스트 콘서트"
+        open_time = "2025.02.15 (토) 20:00"
+        image_path = "https://ticketimage.interpark.com/Play/image/large/25/25008966_p.gif"
         
         # 이미지 파일 존재 확인
         if image_path and not os.path.exists(image_path):
@@ -188,38 +188,11 @@ def quick_post(title: str, open_time: str, image_path: str = None):
         print(f"❌ 빠른 게시 실패: {e}")
         return False
 
-# 사용 예시들
-def usage_examples():
-    """사용 예시"""
-    print("📚 사용 예시:")
-    print()
-    
-    print("1️⃣ 대화형 모드:")
-    print("python simple_tweet.py")
-    print()
-    
-    print("2️⃣ 코드에서 직접 호출:")
-    print('quick_post("세븐틴 콘서트", "2025.02.15 (토) 20:00", "poster.jpg")')
-    print()
-    
-    print("3️⃣ 텍스트만 게시:")
-    print('quick_post("뉴진스 팬미팅", "2025.01.25 (토) 14:00")')
 
 def main():
     """메인 함수"""
-    print("🎯 이미지 포함 트윗 게시기")
-    print()
     
-    choice = input("📋 모드 선택:\n1. 대화형 테스트\n2. 사용 예시 보기\n3. 종료\n\n선택 (1-3): ").strip()
+    simple_test()
     
-    if choice == '1':
-        simple_test()
-    elif choice == '2':
-        usage_examples()
-    elif choice == '3':
-        print("👋 종료합니다.")
-    else:
-        print("❌ 잘못된 선택입니다.")
-
 if __name__ == "__main__":
     main()
