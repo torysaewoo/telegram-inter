@@ -26,7 +26,7 @@ wheels/
 *.egg
 Image/
 # 환경 변수 파일
-# .env
+.env
 
 # 로그 파일
 *.log
@@ -51,7 +51,7 @@ Thumbs.db
 *.md
 
 # Credentials
-# google.json
+google.json
 
 # IDE
 .idea/
